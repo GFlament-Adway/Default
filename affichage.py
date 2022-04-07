@@ -11,7 +11,7 @@ def get_Hurlin_graphs():
     rf_scores = []
     ltr_scores = []
     params = [k for k in range(4, 20 + 2, 2)]
-    n_sim = 1
+    n_sim = 10
     n_indiv = 5000
     n_indiv_test = 2500
     for param in params:
