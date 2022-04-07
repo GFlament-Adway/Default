@@ -63,7 +63,7 @@ def generate_default(n_indiv=5000, n_indiv_test = 2500, n_params=10):
          np.sum([betas[k + 1]*X[i][k] for k in range(n_params)])
          for i in range(n_indiv)]
     Y_test = [betas[0] +
-              np.sum([betas[k + 1]*X[i][k] for k in range(n_params)])
+              np.sum([betas[k + 1]*X_test[i][k] for k in range(n_params)])
               for i in range(n_indiv_test)]
     Y = [1 / (1 + np.exp(-Y[i])) for i in range(n_indiv)]
     Y_test = [1 / (1 + np.exp(-Y_test[i])) for i in range(n_indiv_test)]

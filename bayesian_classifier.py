@@ -36,9 +36,10 @@ class bayesian_classifier():
 
 
 if __name__ == "__main__":
-    Y, X, X_test, Y_test, betas = generate_default(n_indiv=500, n_indiv_test=250, n_params=2)
+    Y, X, X_test, Y_test, betas, gammas, deltas = generate_default_hurlin(n_indiv=500, n_indiv_test=250, n_params=10, non_linear=False)
+    #Y, X, X_test, Y_test, betas = generate_default(n_indiv=500, n_indiv_test=250, n_params=10)
     clf = bayesian_classifier()
     clf.fit(X, Y)
     print("Guillaume : ", clf.score(X_test, Y_test), clf.score(X, Y))
     clf_sklearn = GaussianNB().fit(X, Y)
-    print("sklearn : ", clf_sklearn.score(X_test, Y_test), clf.score(X, Y))
+    print("sklearn : ", clf_sklearn.score(X_test, Y_test), clf_sklearn.score(X, Y))
