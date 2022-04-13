@@ -27,19 +27,11 @@ class bayesian_classifier():
 
     def predict(self, X):
         n_params = len(X)
-        posterior = {c: np.prod([norm.pdf(X[p], loc=self.means[c][p], scale=self.vars[c][p]) for p in range(n_params)])
+        posterior = {c: np.prod([norm.pdf(X[p], loc=self.means[c][p], scale=np.sqrt(self.vars[c][p])) for p in range(n_params)])
                      for c in self.classes}
         return list(posterior.keys())[np.argmax(list(posterior.values()))]
 
     def score(self, X, Y):
-        return 1 - np.sum([abs(clf.predict(X[i]) - Y[i]) for i in range(len(X))]) / (len(X))
+        return 1 - np.sum([abs(self.predict(X[i]) - Y[i]) for i in range(len(X))]) / (len(X))
 
 
-if __name__ == "__main__":
-    Y, X, X_test, Y_test, betas, gammas, deltas = generate_default_hurlin(n_indiv=500, n_indiv_test=250, n_params=10, non_linear=False)
-    #Y, X, X_test, Y_test, betas = generate_default(n_indiv=500, n_indiv_test=250, n_params=10)
-    clf = bayesian_classifier()
-    clf.fit(X, Y)
-    print("Guillaume : ", clf.score(X_test, Y_test), clf.score(X, Y))
-    clf_sklearn = GaussianNB().fit(X, Y)
-    print("sklearn : ", clf_sklearn.score(X_test, Y_test), clf_sklearn.score(X, Y))
