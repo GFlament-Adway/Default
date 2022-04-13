@@ -87,13 +87,3 @@ def generate_default_hurlin(n_indiv=5000, n_indiv_test=2500, n_params=10, non_li
     Y_test = [1 if Y_test[i] > med_test else 0 for i in range(n_indiv_test)]
 
     return Y, X, X_test, Y_test, betas, gammas, deltas
-
-if __name__ == "__main__":
-    n_indiv = 500
-    n_indiv_test = 100
-    param = 5
-    Y, X, X_test, Y_test, betas, gammas,deltas  = generate_default_hurlin(n_indiv=n_indiv, n_indiv_test=n_indiv_test,
-                                                                   n_params=param,
-                                                                  non_linear=False)
-    clf = DecisionTreeClassifier().fit(X,Y)
-    X, X_test = pltr(X, Y, X_test)

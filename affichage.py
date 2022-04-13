@@ -4,7 +4,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
-from data_generator import generate_default_hurlin
+from data_generator import generate_default_hurlin, generate_default
 from PLTR import pltr
 from bayesian_classifier import bayesian_classifier
 import time
@@ -68,10 +68,11 @@ def naive_bayes_classifieur(params =  None, n_gen = 10):
     score_nb = []
     score_logit = []
     for n_param in params:
+        print("############ {param} ##############".format(param=n_param))
         score_nb_temp = []
         score_logit_temp = []
         for _ in range(n_gen):
-            Y, X, X_test, Y_test, betas, gammas, deltas = generate_default_hurlin(n_indiv=100, n_indiv_test=25, n_params=n_param, non_linear=True)
+            Y, X, X_test, Y_test, betas = generate_default(n_indiv=5000, n_indiv_test=2500, n_params=n_param)
             clf = bayesian_classifier()
             clf.fit(X, Y)
             logit = sklearn.linear_model.LogisticRegression().fit(X,Y)
@@ -82,5 +83,5 @@ def naive_bayes_classifieur(params =  None, n_gen = 10):
     return [score_nb, score_logit], params, ["Naive Bayesian classifier", "logistic regression"]
 
 if __name__ == "__main__":
-    score, params = get_Hurlin_graphs()
+    score, params = naive_bayes_classifieur()
     affichage(params, score, ["linear Logit", "Random Forest", "Non linear logit", "ltr"])
