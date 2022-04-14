@@ -23,8 +23,8 @@ def tree_to_code(X, tree, feature_names):
     return X_c
 
 class pltr():
-    def __init__(self):
-        pass
+    def __init__(self, penalization):
+        self.penalization = penalization
 
 
     def fit(self, X, Y, X_test, max_depth=1):
@@ -43,8 +43,10 @@ class pltr():
             clf = DecisionTreeClassifier(max_depth=max_depth).fit(np.array(X)[:, k].reshape(-1, 1), Y)
             X_thresh = tree_to_code(X_thresh, clf, k)
             X_thresh_test = tree_to_code(X_thresh_test, clf, k)
-
-        self.clf = LogisticRegression().fit(X_thresh, Y)
+        if self.penalization > 0:
+            self.clf = LogisticRegression(penalty="l1", solver="saga", max_iter=1000, C = self.penalization).fit(X_thresh, Y)
+        else:
+            self.clf = LogisticRegression(penalty="none",  max_iter=1000).fit(X_thresh, Y)
         self.X = X_thresh
         self.X_test = X_thresh_test
 
