@@ -23,7 +23,7 @@ def get_data(n, T, p, censure_rate = 0.25):
     OU = OU_process(alpha, beta, gamma)
     Y = OU.get_OU(T)
     X = [[[np.random.normal(0, 0.2) for _ in range(p)] for _ in range(n)] for _ in range(T)]
-    betas = [np.random.choice([-1,1])*np.random.normal(1, 1) for _ in range(p)]
+    betas = [np.random.normal(0, 1) for _ in range(p)]
     intensities = [[np.exp(-np.sum([betas[j] * X[k][i][j] for j in range(p)])) for k in range(T)]for i in range(n)]
     t = np.arange(T)
     L = np.array([[np.sum(intensities[k][:i]) for k in range(n)] for i in t]).T
@@ -35,12 +35,5 @@ def get_data(n, T, p, censure_rate = 0.25):
         idx = np.where(L[i] == value)[0][0]
         t = ((-np.log(1 - U) - value) + intensities[i][idx] * idx)/intensities[i][idx]
         Times += [t]
-        Cens += [0 if np.random.uniform(0, 1) < censure_rate else 1]
+        Cens += [1 if np.random.uniform(0, 1) > censure_rate else 0]
     return X, Y, Times, Cens, betas
-
-
-if __name__ == "__main__":
-    np.random.seed(12)
-    X, Y, Times, Cens, betas = get_data(50, 20, 2)
-    print(len(Cens))
-    print(len(Times), Times)
