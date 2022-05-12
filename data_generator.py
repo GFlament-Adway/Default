@@ -1,5 +1,7 @@
 import numpy as np
 
+    
+
 def generate_default_times(intensity=0.2, censure_intensity=0.08, n_obs=100):
     """
 
@@ -14,8 +16,7 @@ def generate_default_times(intensity=0.2, censure_intensity=0.08, n_obs=100):
                                                                 range(n_obs)]
 
 
-
-def generate_default(n_indiv=5000, n_indiv_test = 2500, n_params=10):
+def generate_default(n_indiv=5000, n_indiv_test=2500, n_params=10):
     """
     Generate data
     :param n_indiv: Size of train sample
@@ -28,10 +29,10 @@ def generate_default(n_indiv=5000, n_indiv_test = 2500, n_params=10):
     betas = np.random.uniform(-1, 1, int(n_params * (n_params + 1) / 2))
 
     Y = [betas[0] +
-         np.sum([betas[k + 1]*X[i][k] for k in range(n_params)])
+         np.sum([betas[k + 1] * X[i][k] for k in range(n_params)])
          for i in range(n_indiv)]
     Y_test = [betas[0] +
-              np.sum([betas[k + 1]*X_test[i][k] for k in range(n_params)])
+              np.sum([betas[k + 1] * X_test[i][k] for k in range(n_params)])
               for i in range(n_indiv_test)]
     Y = [1 / (1 + np.exp(-Y[i])) for i in range(n_indiv)]
     Y_test = [1 / (1 + np.exp(-Y_test[i])) for i in range(n_indiv_test)]
@@ -87,3 +88,5 @@ def generate_default_hurlin(n_indiv=5000, n_indiv_test=2500, n_params=10, non_li
     Y_test = [1 if Y_test[i] > med_test else 0 for i in range(n_indiv_test)]
 
     return Y, X, X_test, Y_test, betas, gammas, deltas
+
+

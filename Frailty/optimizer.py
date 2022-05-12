@@ -14,10 +14,10 @@ class gen_algo:
         self.current_fitness = [self.fitness_function(self.func([p for p in x])) for x in self.current_pop]
 
     def init_pop(self):
-        self.current_pop = [[np.random.randint(-10, 10)*np.random.random() for _ in range(self.n_params)] for _ in range(self.pop_size)]
+        self.current_pop = [[np.random.randint(-1, 1)*np.random.random() for _ in range(self.n_params)] for _ in range(self.pop_size)]
 
     def generate_next_gen(self):
-        ordered_fitness = sorted(self.current_fitness)
+        ordered_fitness = sorted(self.current_fitness, reverse = True)
         best_params = ordered_fitness[:int(self.pop_size*self.alpha)]
         new_pop = [self.current_pop[self.current_fitness.index(param)] for param in best_params]
 
@@ -25,7 +25,7 @@ class gen_algo:
             pop = new_pop[np.random.randint(0, len(new_pop) - 1)]
             mom = new_pop[np.random.randint(0, len(new_pop) - 1)]
             if np.random.random() < self.mutate_rate:
-                pop = [p + np.random.random()*np.random.randint(-50, 50) for p in pop]
+                pop = [p + np.random.random()*np.random.randint(-5, 5) for p in pop]
             son = [pop[k] if np.random.random() < 0.5 else mom[k] for k in range(len(pop))]
             new_pop += [son]
 

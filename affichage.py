@@ -11,6 +11,11 @@ from matplotlib import colors
 
 
 def get_Hurlin_graphs(alpha=0.1):
+    """
+
+    :param alpha:
+    :return:
+    """
     debut = time.time()
     logit_scores_nl = []
     logit_scores = []
