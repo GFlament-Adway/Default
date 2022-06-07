@@ -79,7 +79,7 @@ if __name__ == "__main__":
     from data_generator import get_data
     import matplotlib.pyplot as plt
 
-    X, Y, Times, Cens, betas, eta = get_data(100, 20, 3, censure_rate=0.1)
+    X, Y, Times, Cens, betas, eta = get_data(50, 20, 3, censure_rate=0.1)
     print(len(Times))
     print("Parameters to estimate : ", betas, eta)
     frailty = [0 for _ in range(len(Times))]
