@@ -64,7 +64,7 @@ class Frailty():
 
     def draw(self):
         for k in range(self.T):
-            y_k = np.random.normal(0, 1)
+            y_k = np.random.normal(self.Y[k], 2)
             new_frailty = [y if i != k else y_k for i, y in enumerate(self.Y)]
             new_like = self.likelihood(self.eta, "eta", new_frailty)
             old_like = self.likelihood(self.eta, "eta", self.Y)

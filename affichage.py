@@ -1,3 +1,4 @@
+# noinspection PyInterpreter
 import numpy as np
 import sklearn.linear_model
 from sklearn.linear_model import LogisticRegression
@@ -24,8 +25,8 @@ def get_Hurlin_graphs(alpha=0.1):
     pltr_scores = []
     params = [k for k in range(4, 20 + 2, 2)]
     n_sim = 10
-    n_indiv = 5000
-    n_indiv_test = 2500
+    n_indiv = 500
+    n_indiv_test = 250
     for param in params:
         print(param)
         temp_logit_scores = []
@@ -37,7 +38,8 @@ def get_Hurlin_graphs(alpha=0.1):
             Y, X, X_test, Y_test, betas, gammas, deltas = generate_default_hurlin(n_indiv=n_indiv,
                                                                                   n_indiv_test=n_indiv_test,
                                                                                   n_params=param,
-                                                                                  non_linear=False)
+                                                                                  non_linear=False,
+                                                                                  q = param // 2)
             clf = LogisticRegression().fit(X, Y)
             temp_logit_scores += [clf.score(X_test, Y_test)]
             rf = RandomForestClassifier().fit(X, Y)
@@ -54,7 +56,8 @@ def get_Hurlin_graphs(alpha=0.1):
             Y, X, X_test, Y_test, betas, gammas, deltas = generate_default_hurlin(n_indiv=n_indiv,
                                                                                   n_indiv_test=n_indiv_test,
                                                                                   n_params=param,
-                                                                                  non_linear=True)
+                                                                                  non_linear=True,
+                                                                                  q = param//2)
             clf = LogisticRegression().fit(X, Y)
             temp_logit_scores_nl += [clf.score(X_test, Y_test)]
 

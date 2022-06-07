@@ -20,6 +20,8 @@ if __name__ == "__main__":
     intensity = 0.2
     np.random.seed(1)
     defaults, censures = generate_default_times(intensity=intensity)
+    print(np.array(defaults).shape)
+    print(censures)
     print("true value : ", intensity)
     print("MLE estimator without censorship : ", len(defaults)/np.sum(defaults))
     print("MLE estimator with censorship : ", np.sum(censures)/np.sum(defaults))

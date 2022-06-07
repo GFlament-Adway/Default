@@ -23,6 +23,9 @@ def get_data(n, T, p, censure_rate = 0.25):
     X = [[np.random.choice([-1,1])*[np.random.normal(1, 1) for _ in range(p)] for _ in range(n)] for _ in range(T)]
     betas = [np.random.normal(1, 1) for _ in range(p)]
     eta = np.random.normal(-0.5, 0.1)
+    print(np.shape(betas), p)
+    print(np.shape(Y), T)
+    print(np.shape(X), n)
     intensities = [[np.exp(-np.sum([betas[j] * X[k][i][j] for j in range(p)]) - eta * Y[k]) for k in range(T)] for i in range(n)]
     t = np.arange(T)
     L = np.array([[np.sum(intensities[k][:i]) for k in range(n)] for i in t]).T
