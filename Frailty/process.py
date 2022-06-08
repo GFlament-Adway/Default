@@ -14,27 +14,26 @@ class Brownian_motion():
 
 
 class OU_process():
-    def __init__(self, alpha, beta, gamma):
-        self.alpha = alpha
-        self.beta = beta
-        self.gamma = gamma
+    def __init__(self, kappa, burn = 0):
+        self.kappa = kappa
+        self.burn = burn
 
-    def get_OU(self, T):
-        t = np.arange(T)
-        exp_a_t = np.exp(-self.alpha * t)
-        bm = Brownian_motion()
-        dw = bm.get_dw(T)
-        return self.gamma * exp_a_t + self.gamma * (1 - exp_a_t) + self.beta * exp_a_t * np.cumsum(np.exp(self.alpha * t) * dw)
+    def get_OU(self, T, burn = None):
+        self.Y = [0]
+        if burn is not None:
+            self.burn = burn
+        t = np.arange(self.burn + T)
+        for _ in t:
+            self.Y += [self.Y[-1]*(1-self.kappa) + np.random.normal(0, 1)]
+        return self.Y[self.burn:]
 
 if __name__ == "__main__":
-    alpha = 0.05
-    beta = 0.1
-    gamma = 0
-    T = 1000
+    kappa = 0.02
+    T = 3000
 
     BM = Brownian_motion()
     BM_process = BM.get_W(T)
-    OU = OU_process(alpha, beta, gamma)
+    OU = OU_process(kappa)
 
     import matplotlib.pyplot as plt
     plt.figure()

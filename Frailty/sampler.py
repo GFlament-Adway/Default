@@ -79,7 +79,7 @@ if __name__ == "__main__":
     from data_generator import get_data
     import matplotlib.pyplot as plt
 
-    X, Y, Times, Cens, betas, eta = get_data(50, 20, 3, censure_rate=0.1)
+    X, Y, Times, Cens, betas, eta = get_data(100, 20, 3, censure_rate=0.1)
     print(len(Times))
     print("Parameters to estimate : ", betas, eta)
     frailty = [0 for _ in range(len(Times))]
@@ -93,12 +93,13 @@ if __name__ == "__main__":
     frailty_model = Frailty(X, Times, Cens, frailty, no_frailty_model.betas)
     frailty_paths = []
     observable_paths = []
-    for k in range(500):
+    for k in range(30):
         frailty_model.draw()
         frailty_model.fit(frailty=True)
         print(frailty_model.eta)
         print(frailty_model.betas)
-        if k > 300:
+        print(k)
+        if k > 10:
             frailty_paths += [[frailty_model.eta[0] * frailty_model.Y[i] for i in range(len(Y))]]
             observable_paths += [np.mean([np.sum([frailty_model.betas*[p] * X[t][i][p]] for p in range(frailty_model.p)) for i in range(frailty_model.n)]) for t in range(frailty_model.T)]
 
