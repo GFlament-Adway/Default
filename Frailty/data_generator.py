@@ -1,7 +1,7 @@
 from process import OU_process
 import numpy as np
 
-def get_data(n, T, p, censure_rate = 0.25, kappa=0.02):
+def get_data(n, T, censure_rate = 0.25, kappa=0.02):
     """
     Generate data for T timesteps.
 
@@ -16,13 +16,20 @@ def get_data(n, T, p, censure_rate = 0.25, kappa=0.02):
     :param n: Sample size
     :return:
     """
-    OU = OU_process(kappa, burn = 10)
+    OU = OU_process(kappa, burn = 100)
     Y = OU.get_OU(T)
-    X = [[[np.random.choice([-1,1])*np.random.normal(1, 1) for _ in range(p)] for _ in range(n)] for _ in range(T)]
-    betas = [np.random.normal(1, 1) for _ in range(p)]
-    eta = np.random.normal(-0.5, 0.1)
-    intensities = [[np.exp(-np.sum([betas[j] * X[k][i][j] for j in range(p)]) - eta * Y[k]) for k in range(T)] for i in range(n)]
+    betas = [-1, -1.2, -0.65, -0.25, 1.55]
+    p = len(betas)
+    X = [[[1] + [np.random.uniform(np.sqrt(3), np.sqrt(3)) for k in range(p - 1)] for _ in range(n)] for _ in range(T)]
+    #betas = [np.random.choice([-1, 1], p = [0.8, 0.2])*np.random.normal(0.9, 0.2) for _ in range(p+1)]
+    #data = [[np.sum([betas[j] * X[k][i][j] for j in range(p)]) for k in range(T)] for i in range(n)]
+
+
+    eta = 0.12 #As in D. Duffie
+    intensities = [[np.exp(np.sum([betas[j] * X[k][i][j] for j in range(p)]) + eta * Y[k]) for k in range(T)] for i in range(n)]
+
     t = np.arange(T)
+    C = [np.exp(2) for _ in range(n)]
     L = np.array([[np.sum(intensities[k][:i]) for k in range(n)] for i in t]).T
     Times = []
     Cens = []
@@ -32,9 +39,12 @@ def get_data(n, T, p, censure_rate = 0.25, kappa=0.02):
         idx = np.where(L[i] == value)[0][0]
         time = ((-np.log(1 - U) - value) + intensities[i][idx] * idx) / intensities[i][idx]
         Times += [min(time, T-1)]
-        if min(time, T-1) == T-1:
-            Cens += [0]
-        else:
-            Cens += [1 if np.random.uniform(0, 1) > censure_rate else 0]
-    print(np.mean(Times))
+        Cens += [1 if (time > C[i] or time > T) else 0]
     return X, Y, Times, Cens, betas, eta
+
+if __name__ == "__main__":
+    X,Y,Times,Cens, betas, eta  = get_data(400, 20)
+    print(np.sum(Cens)/len(Cens))
+    print(np.mean(Times))
+    print(len(Cens))
+    print(len(Times))
