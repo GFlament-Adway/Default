@@ -29,7 +29,7 @@ class Frailty():
             self.betas = [-1, -1.2, -0.65, -0.25, 1.55]
         else:
             self.betas = betas
-        self.eta = 0.05
+        self.eta = 0.12
 
     def draw(self):
         """
@@ -84,15 +84,14 @@ class Frailty():
         :return:
         """
         for k in range(self.T):
-            for _ in range(10):
-                y_k = np.random.normal(self.Y[k], 1)
-                new_frailty = [y if i != k else y_k for i, y in enumerate(self.Y)]
-                new_like = self.likelihood(self.eta, "eta", new_frailty)
-                old_like = self.likelihood(self.eta, "eta", self.Y)
-                U = np.random.uniform()
-                acceptance = min(np.exp(-new_like) / np.exp(-old_like), 1)
-                if U < acceptance:
-                    self.Y[k] = y_k
+            y_k = np.random.normal(self.Y[k], 0.1)
+            new_frailty = [y if i != k else y_k for i, y in enumerate(self.Y)]
+            new_like = self.likelihood(self.eta, "eta", new_frailty)
+            old_like = self.likelihood(self.eta, "eta", self.Y)
+            U = np.random.uniform()
+            acceptance = min(np.exp(-new_like) / np.exp(-old_like), 1)
+            if U < acceptance:
+                self.Y[k] = y_k
 
 
 if __name__ == "__main__":
@@ -100,10 +99,12 @@ if __name__ == "__main__":
     from data_generator import get_data
     import matplotlib.pyplot as plt
 
-    X, Y, Times, Cens, betas, eta = get_data(100, 30, censure_rate=0)
+    X, Y, Times, Cens, betas, eta = get_data(200, 30, censure_rate=0)
     print("Real parameters : ", betas, eta)
-    frailty = [0 for _ in range(len(Times))]
-    print(Times)
+    print("Censorship rate", np.sum(Cens)/len(Times))
+    frailty = [0 for _ in range(len(Y))]
+    print("Frailty mean ", np.mean(Y))
+    print("Mean evt time : ", np.mean(Times))
     no_frailty_model = Frailty(X, Times, Cens, frailty)
     print("#################### First step of Duffie ################")
     print("############ Estimating betas without frailty ############""")
@@ -111,19 +112,19 @@ if __name__ == "__main__":
     print(no_frailty_model.betas)
     print("############ Second step, estimating eta and frailty ##################")
     frailty = [np.random.normal(0, 1) for _ in range(len(Times))]
-    frailty_model = Frailty(X, Times, Cens, frailty, no_frailty_model.betas)
+    frailty_model = Frailty(X, Times, Cens, frailty, None)
     print("Betas ", frailty_model.betas)
     frailty_paths = []
     observable_paths = []
     likes = []
-    for k in range(50):
+    for k in range(100):
         frailty_model.draw()
         frailty_model.fit(frailty=True)
         print("Log like : ", frailty_model.log_likelihood)
         print("Estimated : ", frailty_model.betas, frailty_model.eta)
         print("Real : ", betas, eta)
         likes += [frailty_model.log_likelihood]
-        if k > 20:
+        if k > 50:
             frailty_paths += [[frailty_model.eta[0] * frailty_model.Y[i] for i in range(len(Y))]]
             #observable_paths += [np.mean([np.sum([frailty_model.betas*[p] * X[t][i][p]] for p in range(frailty_model.p)) for i in range(frailty_model.n)]) for t in range(frailty_model.T)]
 

@@ -33,13 +33,13 @@ class OU_process():
         self.kappa = kappa
         self.burn = burn
 
-    def get_OU(self, T, burn = None):
+    def get_OU(self, T, burn = None, var = 2):
         self.Y = [0]
         if burn is not None:
             self.burn = burn
         t = np.arange(self.burn + T)
         for _ in t:
-            self.Y += [self.Y[-1]*(1-self.kappa) + np.random.normal(0, 1)]
+            self.Y += [self.Y[-1]*(1-self.kappa) + np.random.normal(0, var)]
         return self.Y[self.burn:]
  
 if __name__ == "__main__":
