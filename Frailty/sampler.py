@@ -1,5 +1,4 @@
 import numpy as np
-import optimizer
 from scipy.optimize import minimize
 
 
@@ -69,10 +68,10 @@ class Frailty():
 
     def fit(self, method=None, frailty=True):
         if frailty:
-            self.parameters = minimize(self.likelihood, self.eta, args=("eta", self.Y), method=method)
-            self.eta = self.parameters["x"]
             self.parameters = minimize(self.likelihood, self.betas, args=("beta", self.Y), method=method)
             self.betas = self.parameters["x"]
+            self.parameters = minimize(self.likelihood, self.eta, args=("eta", self.Y), method=method)
+            self.eta = self.parameters["x"]
         else:
             self.parameters = minimize(self.likelihood, self.betas, args=("beta", self.Y), method=method)
             self.betas = self.parameters["x"]
@@ -84,11 +83,11 @@ class Frailty():
         :return:
         """
         for k in range(self.T):
-            y_k = np.random.normal(self.Y[k], 0.1)
+            y_k = np.random.normal(self.Y[k], 2)
             new_frailty = [y if i != k else y_k for i, y in enumerate(self.Y)]
             new_like = self.likelihood(self.eta, "eta", new_frailty)
             old_like = self.likelihood(self.eta, "eta", self.Y)
-            U = np.random.uniform()
+            U = np.random.uniform(0,1)
             acceptance = min(np.exp(-new_like) / np.exp(-old_like), 1)
             if U < acceptance:
                 self.Y[k] = y_k
@@ -99,7 +98,7 @@ if __name__ == "__main__":
     from data_generator import get_data
     import matplotlib.pyplot as plt
 
-    X, Y, Times, Cens, betas, eta = get_data(200, 30, censure_rate=0)
+    X, Y, Times, Cens, betas, eta = get_data(500, 30, censure_rate=0)
     print("Real parameters : ", betas, eta)
     print("Censorship rate", np.sum(Cens)/len(Times))
     frailty = [0 for _ in range(len(Y))]
@@ -117,14 +116,14 @@ if __name__ == "__main__":
     frailty_paths = []
     observable_paths = []
     likes = []
-    for k in range(100):
+    for k in range(200):
         frailty_model.draw()
         frailty_model.fit(frailty=True)
         print("Log like : ", frailty_model.log_likelihood)
         print("Estimated : ", frailty_model.betas, frailty_model.eta)
         print("Real : ", betas, eta)
         likes += [frailty_model.log_likelihood]
-        if k > 50:
+        if k > 100:
             frailty_paths += [[frailty_model.eta[0] * frailty_model.Y[i] for i in range(len(Y))]]
             #observable_paths += [np.mean([np.sum([frailty_model.betas*[p] * X[t][i][p]] for p in range(frailty_model.p)) for i in range(frailty_model.n)]) for t in range(frailty_model.T)]
 
