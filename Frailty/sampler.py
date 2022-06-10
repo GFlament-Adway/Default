@@ -36,7 +36,7 @@ class Frailty():
 
         :return:
         """
-        self.last_draw = np.random.normal(mean=self.last_draw, scale=np.sqrt(2))
+        self.last_draw = np.random.normal(mean=self.last_draw, scale=0.5)
         return self.last_draw
 
     def likelihood(self, param, *args):
@@ -84,18 +84,19 @@ class Frailty():
         :return:
         """
         for k in range(self.T):
-            y_k = np.random.normal(self.Y[k], 2)
-            new_frailty = [y if i != k else y_k for i, y in enumerate(self.Y)]
-            new_like = self.likelihood(self.eta, "eta", new_frailty)
-            old_like = self.likelihood(self.eta, "eta", self.Y)
-            U = np.random.uniform()
-            acceptance = min(np.exp(-new_like) / np.exp(-old_like), 1)
-            if U < acceptance:
-                self.Y[k] = y_k
+            for _ in range(10):
+                y_k = np.random.normal(self.Y[k], 1)
+                new_frailty = [y if i != k else y_k for i, y in enumerate(self.Y)]
+                new_like = self.likelihood(self.eta, "eta", new_frailty)
+                old_like = self.likelihood(self.eta, "eta", self.Y)
+                U = np.random.uniform()
+                acceptance = min(np.exp(-new_like) / np.exp(-old_like), 1)
+                if U < acceptance:
+                    self.Y[k] = y_k
 
 
 if __name__ == "__main__":
-    np.random.seed(13)
+    np.random.seed(1234)
     from data_generator import get_data
     import matplotlib.pyplot as plt
 
@@ -115,14 +116,14 @@ if __name__ == "__main__":
     frailty_paths = []
     observable_paths = []
     likes = []
-    for k in range(100):
+    for k in range(50):
         frailty_model.draw()
         frailty_model.fit(frailty=True)
         print("Log like : ", frailty_model.log_likelihood)
         print("Estimated : ", frailty_model.betas, frailty_model.eta)
         print("Real : ", betas, eta)
         likes += [frailty_model.log_likelihood]
-        if k > 5:
+        if k > 20:
             frailty_paths += [[frailty_model.eta[0] * frailty_model.Y[i] for i in range(len(Y))]]
             #observable_paths += [np.mean([np.sum([frailty_model.betas*[p] * X[t][i][p]] for p in range(frailty_model.p)) for i in range(frailty_model.n)]) for t in range(frailty_model.T)]
 
@@ -131,6 +132,6 @@ if __name__ == "__main__":
     plt.draw()
 
     plt.figure()
-    plt.plot(np.array(frailty_paths).T, color="blue", alpha=0.5)
+    plt.plot(np.array(frailty_paths).T, color="blue", alpha=0.1)
     plt.plot([Y[k]*eta for k in range(len(Y))])
     plt.show()
