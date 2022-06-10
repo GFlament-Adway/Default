@@ -39,7 +39,7 @@ class OU_process():
             self.burn = burn
         t = np.arange(self.burn + T)
         for _ in t:
-            self.Y += [self.Y[-1]*(1-self.kappa) + np.random.normal(0, 5)]
+            self.Y += [self.Y[-1]*(1-self.kappa) + np.random.normal(0, 1)]
         return self.Y[self.burn:]
  
 if __name__ == "__main__":
