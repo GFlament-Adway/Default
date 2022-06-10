@@ -1,16 +1,5 @@
 import numpy as np
 
-class Brownian_motion():
-    def __init__(self):
-        pass
-
-    def get_dw(self, T):
-        return np.random.normal(0, 1, T)
-
-    def get_W(self, T):
-        dw = self.get_dw(T)
-        dw_cs = np.cumsum(dw)
-        return np.insert(dw_cs, 0, 0)[:-1]
 
 class Brownian_motion():
     def __init__(self):

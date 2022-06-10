@@ -5,6 +5,14 @@ from scipy.optimize import minimize
 
 class Frailty():
     def __init__(self, X, Times, Cens, frailty, betas=None):
+        """
+
+        :param X: Covariates
+        :param Times: Event times
+        :param Cens: Censure times
+        :param frailty: frailty paths
+        :param betas: parameters to be estimated
+        """
         self.last_draw = 0
         self.X = X
         self.Times = Times
@@ -14,19 +22,27 @@ class Frailty():
         self.C = Cens
         self.Y = frailty
         if betas is None:
+            """
+            If beta is not given, start at the real parameter 
+            @todo : make sure the vector is of correct length.
+            """
             self.betas = [-1, -1.2, -0.65, -0.25, 1.55]
         else:
             self.betas = betas
         self.eta = 0.05
 
     def draw(self):
+        """
+
+        :return:
+        """
         self.last_draw = np.random.normal(mean=self.last_draw, scale=np.sqrt(2))
         return self.last_draw
 
     def likelihood(self, param, *args):
         """
         See equation 6.4 from D. Duffie
-        :param Y:
+        args state the parameter to optimize, either beta or eta.
         :return:
         """
         if args[0] == "beta":
@@ -63,6 +79,10 @@ class Frailty():
         self.log_likelihood = -self.parameters["fun"]
 
     def draw(self):
+        """
+        Draw according to appendix D of D. Duffie measuring corporate default risk.
+        :return:
+        """
         for k in range(self.T):
             y_k = np.random.normal(self.Y[k], 2)
             new_frailty = [y if i != k else y_k for i, y in enumerate(self.Y)]
