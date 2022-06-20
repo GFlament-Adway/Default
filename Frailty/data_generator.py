@@ -16,12 +16,12 @@ def get_data(n, T, censure_rate = 0.25, kappa=0.02):
     :param n: Sample size
     :return:
     """
-    OU = OU_process(kappa, burn = 100)
+    OU = OU_process(kappa, burn = 1000)
     Y = OU.get_OU(T)
     Y = [y - np.mean(Y) for y in Y]
     betas = [-1, -1.2, -0.65, -0.25, 1.55]
     p = len(betas)
-    X = [[[1] + [np.random.uniform(10, 25) for _ in range(p - 1)] for _ in range(n)] for _ in range(T)]
+    X = [[[1] + [np.random.uniform(10, 20) for _ in range(p - 1)] for _ in range(n)] for _ in range(T)]
     #betas = [np.random.choice([-1, 1], p = [0.8, 0.2])*np.random.normal(0.9, 0.2) for _ in range(p+1)]
     #data = [[np.sum([betas[j] * X[k][i][j] for j in range(p)]) for k in range(T)] for i in range(n)]
 
@@ -30,7 +30,7 @@ def get_data(n, T, censure_rate = 0.25, kappa=0.02):
     intensities = [[np.exp(np.sum([betas[j] * X[k][i][j] for j in range(p)]) + eta * Y[k]) for k in range(T)] for i in range(n)]
 
     t = np.arange(T)
-    C = [np.random.exponential(30) for _ in range(n)]
+    C = [np.random.exponential(20) for _ in range(n)]
     L = np.array([[np.sum(intensities[k][:i]) for k in range(n)] for i in t]).T
     Times = []
     Cens = []

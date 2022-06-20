@@ -3,15 +3,17 @@ from scipy.optimize import minimize
 
 
 class Frailty():
-    def __init__(self, X, Times, Cens, frailty, betas=None):
+    def __init__(self, X, Times, Cens, frailty, N=None, betas=None):
         """
 
         :param X: Covariates
         :param Times: Event times
         :param Cens: Censure times
         :param frailty: frailty paths
+        :param N: number of frailty to approximate the expectation 6.5 of D. Duffie Measuring corporate default risk.
         :param betas: parameters to be estimated
         """
+
         self.last_draw = 0
         self.X = X
         self.Times = Times
@@ -20,6 +22,11 @@ class Frailty():
         self.n = len(X[0])
         self.C = Cens
         self.Y = frailty
+        if N is None:
+            self.N = np.array(frailty).shape[0]
+        else:
+            assert np.array(frailty).shape[0] == N
+            self.N = N
         if betas is None:
             """
             If beta is not given, start at the real parameter 
@@ -44,27 +51,54 @@ class Frailty():
         args state the parameter to optimize, either beta or eta.
         :return:
         """
-        if args[0] == "beta":
-            intensities = [
-                [np.exp(np.sum([param[j] * self.X[k][i][j] for j in range(self.p)]) + self.eta * args[1][k]) for k in
-                 range(int(self.Times[i]) + 1)] for
-                i in range(self.n)]
+        log_likelihood = []
+        if np.all(np.array(frailty) == 0):
+            """
+            Case during the first step of Duffie, no need to compute all Frailty path as they are all equal.
+            """
+            if args[0] == "beta":
+                intensities = [
+                    [np.exp(np.sum([param[j] * self.X[k][i][j] for j in range(self.p)]) + self.eta * args[1][k]) for k in
+                     range(int(self.Times[i]) + 1)] for
+                    i in range(self.n)]
 
-        elif args[0] == "eta":
-            intensities = [
-                [np.exp(np.sum([self.betas[j] * self.X[k][i][j] for j in range(self.p)]) + param * args[1][k]) for k in
-                 range(int(self.Times[i]) + 1)] for
-                i in range(self.n)]
+            elif args[0] == "eta":
+                intensities = [
+                    [np.exp(np.sum([self.betas[j] * self.X[k][i][j] for j in range(self.p)]) + param * args[1][k]) for k in
+                     range(int(self.Times[i]) + 1)] for
+                    i in range(self.n)]
 
-        log_likelihood = 0
-        for i in range(self.n):
-            log_likelihood += (1 - self.C[i]) * (
-                    -np.sum(intensities[i][:int(self.Times[i])]) - intensities[i][int(self.Times[i])] * (
-                    float(self.Times[i]) - int(self.Times[i]))) + \
-                              self.C[i] * (np.log(intensities[i][int(self.Times[i])]) - np.sum(
-                intensities[i][:int(self.Times[i])]) - intensities[i][int(self.Times[i])] * (
-                                                   self.Times[i] - int(self.Times[i])))
-        return -log_likelihood
+            for i in range(self.n):
+                log_likelihood += [(1 - self.C[i]) * (
+                        -np.sum(intensities[i][:int(self.Times[i])]) - intensities[i][int(self.Times[i])] * (
+                        float(self.Times[i]) - int(self.Times[i]))) + \
+                                  self.C[i] * (np.log(intensities[i][int(self.Times[i])]) - np.sum(
+                    intensities[i][:int(self.Times[i])]) - intensities[i][int(self.Times[i])] * (
+                                                       self.Times[i] - int(self.Times[i])))]
+            return -log_likelihood[0]
+
+        else:
+            for _ in range(self.N):
+                if args[0] == "beta":
+                    intensities = [
+                        [np.exp(np.sum([param[j] * self.X[k][i][j] for j in range(self.p)]) + self.eta * args[1][k]) for k in
+                         range(int(self.Times[i]) + 1)] for
+                        i in range(self.n)]
+
+                elif args[0] == "eta":
+                    intensities = [
+                        [np.exp(np.sum([self.betas[j] * self.X[k][i][j] for j in range(self.p)]) + param * args[1][k]) for k in
+                         range(int(self.Times[i]) + 1)] for
+                        i in range(self.n)]
+
+                for i in range(self.n):
+                    log_likelihood += [(1 - self.C[i]) * (
+                            -np.sum(intensities[i][:int(self.Times[i])]) - intensities[i][int(self.Times[i])] * (
+                            float(self.Times[i]) - int(self.Times[i]))) + \
+                                      self.C[i] * (np.log(intensities[i][int(self.Times[i])]) - np.sum(
+                        intensities[i][:int(self.Times[i])]) - intensities[i][int(self.Times[i])] * (
+                                                           self.Times[i] - int(self.Times[i])))]
+            return -np.mean(log_likelihood)
 
     def fit(self, method=None, frailty=True):
         if frailty:
@@ -98,10 +132,11 @@ if __name__ == "__main__":
     from data_generator import get_data
     import matplotlib.pyplot as plt
 
-    X, Y, Times, Cens, betas, eta = get_data(500, 30, censure_rate=0)
+    N = 20
+    X, Y, Times, Cens, betas, eta = get_data(100, 30, censure_rate=0)
     print("Real parameters : ", betas, eta)
     print("Censorship rate", np.sum(Cens)/len(Times))
-    frailty = [0 for _ in range(len(Y))]
+    frailty = [0 for _ in range(len(Y)) for _ in range(N)]
     print("Frailty mean ", np.mean(Y))
     print("Mean evt time : ", np.mean(Times))
     no_frailty_model = Frailty(X, Times, Cens, frailty)
