@@ -1,6 +1,9 @@
 {
-  "betas": [-1, -1.2, -0.65, -0.25, 1.55],
-  "eta": 0.12,
+
+  "real values": {
+    "betas": [-1, -1.2, -0.65, -0.25, 1.55],
+    "eta": 0.12
+  },
   "init": {
       "betas": [0,0,0,0,0],
       "eta": 0,
@@ -12,9 +15,13 @@
 
   "OU_burn" : 100,
   "max_time": 30,
-  "n_obs": 500,
+  "n_obs": 100,
+  "min_values_X": 7,
+  "max_values_X": 15,
   "maxiter": 10,
   "samples": 10,
-
+  "Censure": 20,
+  "n_iter": 20,
+  "seed": 1234,
   "output": "latex"
 }
