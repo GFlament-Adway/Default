@@ -14,20 +14,6 @@ class Brownian_motion():
         return np.insert(dw_cs, 0, 0)[:-1]
 
 
-class OU_process_old():
-    def __init__(self, alpha, beta, gamma):
-        self.alpha = alpha
-        self.beta = beta
-        self.gamma = gamma
-
-    def get_OU(self, T):
-        t = np.arange(T)
-        exp_a_t = np.exp(-self.alpha * t)
-        bm = Brownian_motion()
-        dw = bm.get_dw(T)
-        return self.gamma * exp_a_t + self.gamma * (1 - exp_a_t) + self.beta * exp_a_t * np.cumsum(np.exp(self.alpha * t) * dw)
-
-
 class OU_process():
     def __init__(self, kappa, burn = 0):
         self.kappa = kappa
@@ -43,7 +29,7 @@ class OU_process():
         return self.Y[self.burn:]
  
 if __name__ == "__main__":
-    kappa = 0.018
+    kappa = 0.0018
     T = 3000
 
     BM = Brownian_motion()

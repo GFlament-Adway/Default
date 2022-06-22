@@ -25,17 +25,16 @@ class Frailty():
         if N is None:
             self.N = np.array(frailty).shape[0]
         else:
-            assert np.array(frailty).shape[0] == N
             self.N = N
         if betas is None:
             """
             If beta is not given, start at the real parameter 
             @todo : make sure the vector is of correct length.
             """
-            self.betas = [-1, -1.2, -0.65, -0.25, 1.55]
+            self.betas = [-0.8, -1, -0.5, -0.1, 1.5]
         else:
             self.betas = betas
-        self.eta = 0.12
+        self.eta = 0
 
     def draw(self):
         """
@@ -51,63 +50,73 @@ class Frailty():
         args state the parameter to optimize, either beta or eta.
         :return:
         """
-        log_likelihood = []
-        if np.all(np.array(frailty) == 0):
+        like = []
+        likelihood = []
+        if np.all(np.array(frailty) == 0) or args[2] is False:
             """
             Case during the first step of Duffie, no need to compute all Frailty path as they are all equal.
             """
             if args[0] == "beta":
                 intensities = [
-                    [np.exp(np.sum([param[j] * self.X[k][i][j] for j in range(self.p)]) + self.eta * args[1][k]) for k in
+                    [max(min(np.exp(np.sum([param[j] * self.X[k][i][j] for j in range(self.p)]) + self.eta * args[1][0][k]), 10e20), 10e-10) for
+                     k in
                      range(int(self.Times[i]) + 1)] for
                     i in range(self.n)]
 
             elif args[0] == "eta":
                 intensities = [
-                    [np.exp(np.sum([self.betas[j] * self.X[k][i][j] for j in range(self.p)]) + param * args[1][k]) for k in
+                    [max(min(np.exp(np.sum([self.betas[j] * self.X[k][i][j] for j in range(self.p)]) + param * args[1][0][k]), 10e20), 10e-10)
+                     for k in
                      range(int(self.Times[i]) + 1)] for
                     i in range(self.n)]
 
             for i in range(self.n):
-                log_likelihood += [(1 - self.C[i]) * (
-                        -np.sum(intensities[i][:int(self.Times[i])]) - intensities[i][int(self.Times[i])] * (
-                        float(self.Times[i]) - int(self.Times[i]))) + \
-                                  self.C[i] * (np.log(intensities[i][int(self.Times[i])]) - np.sum(
-                    intensities[i][:int(self.Times[i])]) - intensities[i][int(self.Times[i])] * (
-                                                       self.Times[i] - int(self.Times[i])))]
-            return -log_likelihood[0]
+                int_intensity = -np.sum(intensities[i][:int(self.Times[i])]) - intensities[i][int(self.Times[i])] * (
+                        float(self.Times[i]) - int(self.Times[i]))
+                assert intensities[i][int(self.Times[i])] > 0, "{inten}".format(inten=intensities[i])
+                like += [(1 - self.C[i]) * (int_intensity + np.log(intensities[i][int(self.Times[i])])) + self.C[i] * int_intensity]
+            return -np.sum(like)
 
         else:
-            for _ in range(self.N):
+            for a in range(self.N):
+                #print(a)
+                log_likelihood = []
                 if args[0] == "beta":
                     intensities = [
-                        [np.exp(np.sum([param[j] * self.X[k][i][j] for j in range(self.p)]) + self.eta * args[1][k]) for k in
+                        [max(min(np.exp(np.sum([param[j] * self.X[k][i][j] for j in range(self.p)]) + self.eta * args[1][a][k]), 10e20), 10e-10)
+                         for k in
                          range(int(self.Times[i]) + 1)] for
                         i in range(self.n)]
 
                 elif args[0] == "eta":
                     intensities = [
-                        [np.exp(np.sum([self.betas[j] * self.X[k][i][j] for j in range(self.p)]) + param * args[1][k]) for k in
+                        [max(min(np.exp(
+                            np.sum([self.betas[j] * self.X[k][i][j] for j in range(self.p)]) + param * args[1][a][k]), 10e20), 10e-10)
+                         for k in
                          range(int(self.Times[i]) + 1)] for
                         i in range(self.n)]
-
+                like = []
                 for i in range(self.n):
-                    log_likelihood += [(1 - self.C[i]) * (
-                            -np.sum(intensities[i][:int(self.Times[i])]) - intensities[i][int(self.Times[i])] * (
-                            float(self.Times[i]) - int(self.Times[i]))) + \
-                                      self.C[i] * (np.log(intensities[i][int(self.Times[i])]) - np.sum(
-                        intensities[i][:int(self.Times[i])]) - intensities[i][int(self.Times[i])] * (
-                                                           self.Times[i] - int(self.Times[i])))]
+                    int_intensity = -np.sum(intensities[i][:int(self.Times[i])]) - intensities[i][int(self.Times[i])] * (
+                            float(self.Times[i]) - int(self.Times[i]))
+                    assert intensities[i][int(self.Times[i])] > 0, "{inten}".format(inten=intensities[i])
+                    like += [(1 - self.C[i]) * (int_intensity + np.log(intensities[i][int(self.Times[i])])) + self.C[i] * int_intensity]
+
+                log_likelihood += [np.sum(like)]
             return -np.mean(log_likelihood)
 
     def fit(self, method=None, frailty=True):
         if frailty:
-            self.parameters = minimize(self.likelihood, self.betas, args=("beta", self.Y), method=method)
+            self.parameters = minimize(self.likelihood, self.betas, args=("beta", self.Y, True), method=method,
+                                       options={"maxiter": 5})
             self.betas = self.parameters["x"]
-            self.parameters = minimize(self.likelihood, self.eta, args=("eta", self.Y), method=method)
+            self.parameters = minimize(self.likelihood, self.eta, args=("eta", self.Y, True), method=method,
+                                       options={"maxiter": 5})
             self.eta = self.parameters["x"]
+            #self.eta = [1]
         else:
-            self.parameters = minimize(self.likelihood, self.betas, args=("beta", self.Y), method=method)
+            self.parameters = minimize(self.likelihood, self.betas, args=("beta", self.Y, False), method=method,
+                                       options={"maxiter": 5})
             self.betas = self.parameters["x"]
         self.log_likelihood = -self.parameters["fun"]
 
@@ -116,57 +125,72 @@ class Frailty():
         Draw according to appendix D of D. Duffie measuring corporate default risk.
         :return:
         """
-        for k in range(self.T):
-            y_k = np.random.normal(self.Y[k], 2)
-            new_frailty = [y if i != k else y_k for i, y in enumerate(self.Y)]
-            new_like = self.likelihood(self.eta, "eta", new_frailty)
-            old_like = self.likelihood(self.eta, "eta", self.Y)
-            U = np.random.uniform(0,1)
-            acceptance = min(np.exp(-new_like) / np.exp(-old_like), 1)
-            if U < acceptance:
-                self.Y[k] = y_k
+        #print("Draw")
+        acceptance_rate = []
+        for a in range(self.N):
+            for k in range(self.T):
+                y_k = np.random.normal(self.Y[a][k], 2)
+                #y_k = self.Y[a][k]
+                new_frailty = [[y if i != k else y_k for i, y in enumerate(self.Y[a])]]
+                new_like = self.likelihood(self.eta[0], "eta", new_frailty, False)
+                old_like = self.likelihood(self.eta[0], "eta", [self.Y[a]], False)
+                #print(np.exp(-new_like), np.exp(-old_like))
+                U = np.random.uniform(0, 1)
+                acceptance = min(np.exp(-new_like) / np.exp(-old_like), 1)
 
-
+                if U < acceptance:
+                    acceptance_rate += [1]
+                    self.Y[a][k] = y_k
+                else:
+                    acceptance_rate += [0]
+        print("mean acceptance rate : ", np.mean(acceptance_rate))
 if __name__ == "__main__":
     np.random.seed(1234)
     from data_generator import get_data
     import matplotlib.pyplot as plt
 
-    N = 20
-    X, Y, Times, Cens, betas, eta = get_data(100, 30, censure_rate=0)
+    N = 10
+    X, Y, Times, Cens, betas, eta = get_data(100, 30)
     print("Real parameters : ", betas, eta)
-    print("Censorship rate", np.sum(Cens)/len(Times))
-    frailty = [0 for _ in range(len(Y)) for _ in range(N)]
+    print("Censorship rate", np.sum(Cens) / len(Times))
+    frailty = [[0 for _ in range(len(Y))] for _ in range(N)]
     print("Frailty mean ", np.mean(Y))
     print("Mean evt time : ", np.mean(Times))
-    no_frailty_model = Frailty(X, Times, Cens, frailty)
+    no_frailty_model = Frailty(X, Times, Cens, frailty, betas = [np.random.normal(0,1) for _ in range(len(X[0][0]))])
+    print("Initial values :", no_frailty_model.betas)
     print("#################### First step of Duffie ################")
     print("############ Estimating betas without frailty ############""")
     no_frailty_model.fit(frailty=False)
     print(no_frailty_model.betas)
+
     print("############ Second step, estimating eta and frailty ##################")
-    frailty = [np.random.normal(0, 1) for _ in range(len(Times))]
-    frailty_model = Frailty(X, Times, Cens, frailty, None)
+    #frailty = [[np.random.normal(0, 4) for _ in range(len(Y))] for _ in range(N)]
+    frailty = [[1 for k in range(len(Y))] for _ in range(N)]
+    print(np.array(frailty).shape)
+    frailty_model = Frailty(X, Times, Cens, frailty, betas = no_frailty_model.betas)
     print("Betas ", frailty_model.betas)
     frailty_paths = []
     observable_paths = []
     likes = []
-    for k in range(200):
-        frailty_model.draw()
+    for k in range(20):
+        print(k)
         frailty_model.fit(frailty=True)
         print("Log like : ", frailty_model.log_likelihood)
         print("Estimated : ", frailty_model.betas, frailty_model.eta)
         print("Real : ", betas, eta)
+        frailty_model.draw()
         likes += [frailty_model.log_likelihood]
-        if k > 100:
-            frailty_paths += [[frailty_model.eta[0] * frailty_model.Y[i] for i in range(len(Y))]]
-            #observable_paths += [np.mean([np.sum([frailty_model.betas*[p] * X[t][i][p]] for p in range(frailty_model.p)) for i in range(frailty_model.n)]) for t in range(frailty_model.T)]
+        frailty_paths += [[frailty_model.eta[0] * frailty_model.Y[a][i] for i in range(len(Y))] for a in range(N)]
+        # observable_paths += [np.mean([np.sum([frailty_model.betas*[p] * X[t][i][p]] for p in range(frailty_model.p)) for i in range(frailty_model.n)]) for t in range(frailty_model.T)]
 
+    print(frailty_paths)
     plt.figure()
-    plt.plot(likes)
-    plt.draw()
-
-    plt.figure()
-    plt.plot(np.array(frailty_paths).T, color="blue", alpha=0.1)
-    plt.plot([Y[k]*eta for k in range(len(Y))])
+    paths = np.array(frailty_paths).T
+    mean_paths = [np.mean([frailty_paths[i][t] for i in range(len(frailty_paths))]) for t in range(len(frailty_paths[0]))]
+    quantile_05 = [np.sort([frailty_paths[i][t] for i in range(len(frailty_paths))])[int(len(frailty_paths)*0.05)] for t in range(len(frailty_paths[0]))]
+    quantile_95 = [np.sort([frailty_paths[i][t] for i in range(len(frailty_paths))])[int(len(frailty_paths)*0.95)] for t in range(len(frailty_paths[0]))]
+    plt.plot(mean_paths, color="blue", alpha=0.6)
+    plt.plot(quantile_95, color="blue", alpha=0.6)
+    plt.plot(quantile_05, color="blue", alpha=0.6)
+    plt.plot([Y[k] * eta for k in range(len(Y))], color="red")
     plt.show()
