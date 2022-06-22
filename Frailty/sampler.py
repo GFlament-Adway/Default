@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.optimize import minimize
-
+from utils import load_params
 
 class Frailty():
-    def __init__(self, X, Times, Cens, frailty, N=None, betas=None):
+    def __init__(self, X, Times, Cens, frailty, N=None, betas=None, eta=None):
         """
 
         :param X: Covariates
@@ -26,15 +26,8 @@ class Frailty():
             self.N = np.array(frailty).shape[0]
         else:
             self.N = N
-        if betas is None:
-            """
-            If beta is not given, start at the real parameter 
-            @todo : make sure the vector is of correct length.
-            """
-            self.betas = [-0.8, -1, -0.5, -0.1, 1.5]
-        else:
-            self.betas = betas
-        self.eta = 0
+        self.betas = betas
+        self.eta = eta
 
     def draw(self):
         """
@@ -149,14 +142,15 @@ if __name__ == "__main__":
     from data_generator import get_data
     import matplotlib.pyplot as plt
 
-    N = 10
-    X, Y, Times, Cens, betas, eta = get_data(100, 30)
+    params = load_params()
+    N = params["samples"]
+    X, Y, Times, Cens, betas, eta = get_data(params["n_obs"], params["max_time"])
     print("Real parameters : ", betas, eta)
     print("Censorship rate", np.sum(Cens) / len(Times))
     frailty = [[0 for _ in range(len(Y))] for _ in range(N)]
     print("Frailty mean ", np.mean(Y))
     print("Mean evt time : ", np.mean(Times))
-    no_frailty_model = Frailty(X, Times, Cens, frailty, betas = [np.random.normal(0,1) for _ in range(len(X[0][0]))])
+    no_frailty_model = Frailty(X, Times, Cens, frailty, betas = params["init"]["betas"], eta = 0)
     print("Initial values :", no_frailty_model.betas)
     print("#################### First step of Duffie ################")
     print("############ Estimating betas without frailty ############""")
@@ -164,10 +158,10 @@ if __name__ == "__main__":
     print(no_frailty_model.betas)
 
     print("############ Second step, estimating eta and frailty ##################")
-    #frailty = [[np.random.normal(0, 4) for _ in range(len(Y))] for _ in range(N)]
-    frailty = [[1 for k in range(len(Y))] for _ in range(N)]
+    frailty = [[0 for k in range(len(Y))] for _ in range(N)]
+    #Start without frailty
     print(np.array(frailty).shape)
-    frailty_model = Frailty(X, Times, Cens, frailty, betas = no_frailty_model.betas)
+    frailty_model = Frailty(X, Times, Cens, frailty, betas = no_frailty_model.betas, eta = params["init"]["eta"])
     print("Betas ", frailty_model.betas)
     frailty_paths = []
     observable_paths = []
@@ -186,11 +180,6 @@ if __name__ == "__main__":
     print(frailty_paths)
     plt.figure()
     paths = np.array(frailty_paths).T
-    mean_paths = [np.mean([frailty_paths[i][t] for i in range(len(frailty_paths))]) for t in range(len(frailty_paths[0]))]
-    quantile_05 = [np.sort([frailty_paths[i][t] for i in range(len(frailty_paths))])[int(len(frailty_paths)*0.05)] for t in range(len(frailty_paths[0]))]
-    quantile_95 = [np.sort([frailty_paths[i][t] for i in range(len(frailty_paths))])[int(len(frailty_paths)*0.95)] for t in range(len(frailty_paths[0]))]
-    plt.plot(mean_paths, color="blue", alpha=0.6)
-    plt.plot(quantile_95, color="blue", alpha=0.6)
-    plt.plot(quantile_05, color="blue", alpha=0.6)
+    plt.plot(paths, color="blue", alpha=0.6)
     plt.plot([Y[k] * eta for k in range(len(Y))], color="red")
     plt.show()

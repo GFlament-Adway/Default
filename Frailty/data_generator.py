@@ -19,7 +19,7 @@ def get_data(n, T, kappa=0.002):
     OU = OU_process(kappa, burn = 100)
     Y = OU.get_OU(T)
     Y = [y - np.mean(Y) for y in Y]
-    betas = [-3, -1.2, -0.65, -0.25, 1.55]
+    betas = [-1, -1.2, -0.65, -0.25, 1.55]
     p = len(betas)
     X = [[[1] + [np.random.uniform(7, 15) for _ in range(p - 1)] for _ in range(n)] for _ in range(T)]
     #betas = [np.random.choice([-1, 1], p = [0.8, 0.2])*np.random.normal(0.9, 0.2) for _ in range(p+1)]
