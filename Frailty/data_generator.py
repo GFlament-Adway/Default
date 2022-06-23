@@ -17,6 +17,7 @@ def get_data(n, T, **kwargs):
     :return:
     """
 
+    print(kwargs["kwargs"])
     OU = OU_process(kwargs["kwargs"]["real values"]["eta"], burn = kwargs["kwargs"]["OU_burn"])
     Y = OU.get_OU(T)
     Y = [y - np.mean(Y) for y in Y]
