@@ -45,7 +45,7 @@ class Frailty():
         """
         like = []
         likelihood = []
-        if np.all(np.array(frailty) == 0) or args[2] is False:
+        if np.all(np.array(self.Y) == 0) or args[2] is False:
             """
             Case during the first step of Duffie, no need to compute all Frailty path as they are all equal.
             """

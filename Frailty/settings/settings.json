@@ -6,7 +6,7 @@
   },
   "init": {
       "betas": [0,0,0,0,0],
-      "eta": 0,
+      "eta": 0.05,
       "Y": 0
   },
   "gibbs_sampler": {
@@ -16,8 +16,8 @@
   "OU_burn" : 100,
   "max_time": 30,
   "n_obs": 100,
-  "min_values_X": 7,
-  "max_values_X": 15,
+  "min_values_X": 10,
+  "max_values_X": 20,
   "maxiter": 10,
   "samples": 10,
   "Censure": 20,

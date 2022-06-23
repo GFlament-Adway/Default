@@ -45,7 +45,6 @@ if __name__ == "__main__":
         frailty_paths += [[frailty_model.eta[0] * frailty_model.Y[a][i] for i in range(len(Y))] for a in range(N)]
         # observable_paths += [np.mean([np.sum([frailty_model.betas*[p] * X[t][i][p]] for p in range(frailty_model.p)) for i in range(frailty_model.n)]) for t in range(frailty_model.T)]
 
-    print(frailty_paths)
 
     if params["output"] == "latex":
         output_latex(params)
