@@ -18,7 +18,7 @@ def get_data(n, T, **kwargs):
     """
 
     print(kwargs["kwargs"])
-    OU = OU_process(kwargs["kwargs"]["real values"]["eta"], burn = kwargs["kwargs"]["OU_burn"])
+    OU = OU_process(kwargs["kwargs"]["real values"]["kappa"], burn = kwargs["kwargs"]["OU_burn"])
     Y = OU.get_OU(T)
     Y = [y - np.mean(Y) for y in Y]
     betas = kwargs["kwargs"]["real values"]["betas"]
