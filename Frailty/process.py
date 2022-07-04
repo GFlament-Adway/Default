@@ -26,7 +26,7 @@ class OU_process():
         t = np.arange(self.burn + T)
         for _ in t:
             self.Y += [self.Y[-1]*(1-self.kappa) + np.random.normal(0, var)]
-        return self.Y[self.burn:]
+        return self.Y[self.burn:-1]
  
 if __name__ == "__main__":
     kappa = 0.0018

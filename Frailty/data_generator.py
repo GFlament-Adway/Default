@@ -20,10 +20,16 @@ def get_data(n, T, **kwargs):
     print(kwargs["kwargs"])
     OU = OU_process(kwargs["kwargs"]["real values"]["kappa"], burn = kwargs["kwargs"]["OU_burn"])
     Y = OU.get_OU(T)
-    Y = [y - np.mean(Y) for y in Y]
+    #Y = [0 for _ in range(len(Y))]
     betas = kwargs["kwargs"]["real values"]["betas"]
     p = len(betas)
-    X = [[[1] + [np.random.uniform(kwargs["kwargs"]["min_values_X"], kwargs["kwargs"]["max_values_X"]) for _ in range(p - 1)] for _ in range(n)] for _ in range(T)]
+    if kwargs["kwargs"]["const"] == 1:
+        X = [[[1] + [np.random.uniform(kwargs["kwargs"]["min_values_X"], kwargs["kwargs"]["max_values_X"]) for _ in range(p - 1)] for _ in range(n)] for _ in range(T)]
+    else:
+        print("No constant")
+        X = [[[np.random.uniform(kwargs["kwargs"]["min_values_X"], kwargs["kwargs"]["max_values_X"]) for _ in range(p)] for _ in range(n)] for _ in range(T)]
+
+
     #betas = [np.random.choice([-1, 1], p = [0.8, 0.2])*np.random.normal(0.9, 0.2) for _ in range(p+1)]
     #data = [[np.sum([betas[j] * X[k][i][j] for j in range(p)]) for k in range(T)] for i in range(n)]
 

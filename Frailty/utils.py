@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 def mse(x, y):
     assert len(x) == len(y)
-    return np.mean([(x[k] - y[k]) ** 2 for k in range(len(x))])
+    return np.mean([(float(x[k]) - float(y[k])) ** 2 for k in range(len(x))])
 
 
 def check_setup(params):
@@ -15,10 +15,11 @@ def check_setup(params):
     :return:
     """
     cwd = os.getcwd()
+    existing_runs = len(os.listdir(cwd + "/run"))
     for k in range(params["n_run"]):
-        if not os.path.isdir(cwd + "/run_{k}".format(k=k)):
-            print(cwd + "/run_{k}".format(k=k))
-            os.mkdir(cwd + "/run_{k}".format(k=k))
+        if not os.path.isdir(cwd + "/run/run_{k}".format(k=k + existing_runs)):
+            print(cwd + "/run/run_{k}".format(k=k + existing_runs))
+            os.mkdir(cwd + "/run/run_{k}".format(k=k + existing_runs))
 
 
 def load_params(path="settings/settings.json"):
@@ -33,15 +34,16 @@ def load_params(path="settings/settings.json"):
     return data
 
 
-def output_latex(param, results, run):
-    result_tab = """ \\begin{tabular}{c|c|c|c}
-    Iteration & beta & eta & MSE Frailty\\\\ 
+def output_latex(param, results, run, existing_runs):
+    result_tab = """ \\begin{tabular}{c|c|c|c|c}
+    Iteration & beta & eta & MSE Frailty & Frailty mean\\\\ 
     \\hline
     """
     for k in results.keys():
-        result_tab += "{k} & {beta} & {eta} & {mse} \\\\ \hline".format(k=k, beta=results[k]["estimated betas"],
+        result_tab += "{k} & {beta} & {eta} & {mse} & {frailty_mean}\\\\ \hline".format(k=k, beta=results[k]["estimated betas"],
                                                                         eta=results[k]["estimated eta"],
-                                                                        mse=results[k]["mse"])
+                                                                        mse=results[k]["mse"],
+                                                                                        frailty_mean=results[k]["frailty mean"])
 
     result_tab += """
     \\end{tabular}
@@ -68,22 +70,33 @@ def output_latex(param, results, run):
      Seed &""" "${s}$ ".format(s=param["seed"]) + """ \\\\
      \\hline
 \end{tabular}""" + result_tab
-    with open("run_{k}/result_summary.txt".format(k=run), "w") as txt_file:
+    with open("run/run_{k}/result_summary.txt".format(k=run + existing_runs), "w") as txt_file:
         txt_file.write(full_string)
 
     if param["savefig"] == "True":
         plt.figure()
         plt.plot(results[run]["Y"], color="red", label="True value")
         plt.plot(np.array(results[run]["frailty path"]).T, color="blue", alpha=0.1)
-
         plt.legend()
-        plt.savefig("run_{k}/frailty_path".format(k=run))
+        plt.savefig("run/run_{k}/frailty_path_{l}".format(k=run+existing_runs, l=run+existing_runs))
+
+        mat = np.matmul(results[run]["X"], results[run]["estimated betas"]).T
+        mat += results[run]["estimated eta"] * np.mean(results[run]["frailty path"][0])
+        hat_intensities = np.clip(np.exp(mat), 10e-120, 10e120)
+
+        mat = np.matmul(results[run]["X"], results[run]["betas"]).T
+        mat += results[run]["eta"] * np.mean(results[run]["Y"][0])
+        intensities = np.clip(np.exp(mat), 10e-120, 10e120)
+
+        for a in range(len(hat_intensities)):
+            plt.figure()
+            plt.plot(hat_intensities[a], label="hat")
+            plt.plot(intensities[a], label="true")
+            plt.legend()
+            plt.savefig("run/run_{k}/hazard_rate_indiv_{a}".format(k=run+existing_runs, a=a))
 
     return full_string
 
-
-def save_figure():
-    pass
 
 
 if __name__ == "__main__":

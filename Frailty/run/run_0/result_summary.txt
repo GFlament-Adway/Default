@@ -1,0 +1,27 @@
+
+    \begin{center}
+    \begin{tabular}{c|c}
+    parameter & value \\
+     Starting value of $\beta $  & [0, 0, 0, 0, 0] \\
+     \hline
+     Starting value of $\eta$ & 0.05 \\ 
+     \hline
+     Real values of $\beta$ & [-1, -1.2, -0.65, -0.25, 1.55] \\
+     \hline
+     Real value of $\eta$ & 0.12  \\
+     \hline
+     $n$ & 100  \\
+     \hline
+     $X$ & $\mathcal{U}(5, 10)$  \\
+     \hline
+     Censure & $\exp(30)$  \\
+     \hline
+     Seed &$1234$  \\
+     \hline
+\end{tabular} \begin{tabular}{c|c|c|c|c}
+    Iteration & beta & eta & MSE Frailty & Frailty mean\\ 
+    \hline
+    0 & [-0.568 -1.247 -0.646 -0.259  1.564] & [0.051] & 0.089 & -0.025372593307377116\\ \hline1 & [-0.946 -1.326 -0.696 -0.209  1.646] & [0.055] & 0.152 & -0.038236805910151675\\ \hline2 & [-1.218 -1.353 -0.699 -0.197  1.675] & [0.054] & 0.192 & -0.043960172114097494\\ \hline3 & [-1.489 -1.363 -0.695 -0.178  1.691] & [0.058] & 0.246 & -0.05561062253107466\\ \hline4 & [-1.806 -1.358 -0.698 -0.171  1.716] & [0.063] & 0.462 & -0.09266205683590703\\ \hline
+    \end{tabular}
+    \end{center}
+    
