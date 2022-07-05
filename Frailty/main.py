@@ -18,7 +18,7 @@ if __name__ == "__main__":
         N = params["run"][i]["samples"]
         X, Y, Times, Cens, betas, eta = get_data(params["run"][i]["n_obs"], params["run"][i]["max_time"],
                                                  kwargs=params["run"][i])
-        print("Real frailty :", [eta*Y[i] for i in range(len(Y))])
+        print("Real frailty :", [eta * Y[i] for i in range(len(Y))])
 
         print("Real parameters : ", betas, eta)
         print("Censorship rate", np.sum(Cens) / len(Times))
@@ -47,12 +47,15 @@ if __name__ == "__main__":
         frailty_model = Frailty(X, Times, Cens, Y_hat, betas=no_frailty_model.betas,
                                 eta=params["run"][i]["init"]["eta"], optim=params["run"][i]["optimization_method"])
 
+        print("Real frailty :", [eta * Y[i] for i in range(len(Y))])
+
         print("Betas ", frailty_model.betas)
         frailty_paths = []
         observable_paths = []
         likes = []
         results = {}
         for k in range(params["run"][i]["n_iter"]):
+            print("iteration : ", k)
             frailty_model.fit(frailty=True)
             print("- log like : ", frailty_model.log_likelihood)
             print("Estimated : ", frailty_model.betas, frailty_model.eta)
@@ -73,15 +76,14 @@ if __name__ == "__main__":
                                  range(N)]
                 print("frailty mean : ", np.mean(frailty_paths))
 
-
-            print("Real Frailty : ", [params["run"][i]["init"]["eta"] * y for y in Y])
-            print("Estimated :", frailty_paths[0])
+            print("Real Frailty : ", [params["run"][i]["real values"]["eta"] * y for y in Y])
+            print("Estimated :", [np.mean(np.array(frailty_paths).T[t]) for t in range(params["run"][i]["max_time"])])
 
             results.update({k: {"estimated betas": np.round(frailty_model.betas, 3),
                                 "estimated eta": np.round(frailty_model.eta, 3),
-                                "mse": np.round(np.mean(frailty_path_error), 3), "frailty path": frailty_paths,
-                                "Y": Y,
-                                "frailty mean": np.mean(frailty_paths),
+                                "mse": np.round(np.mean(frailty_path_error), 3), "frailty path": frailty_paths[0],
+                                "Y": [eta * y for y in Y],
+                                "frailty mean": np.mean(frailty_paths[0]),  ###This is a mistake, debug purpose
                                 "X": X,
                                 "betas": betas,
                                 "eta": eta}})

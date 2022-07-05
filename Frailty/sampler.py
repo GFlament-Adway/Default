@@ -262,8 +262,8 @@ class Frailty():
                 y_k = np.random.normal(self.Y[a][k], 4)
                 #y_k = self.frailty[a][k]
                 new_frailty = [[y if i != k else y_k for i, y in enumerate(self.Y[a])]]
-                new_like = self.f_likelihood(self.eta[0], "eta", new_frailty, False)
-                old_like = self.f_likelihood(self.eta[0], "eta", new_frailty, False)
+                new_like = self.f_likelihood(self.eta, "eta", new_frailty, False)
+                old_like = self.f_likelihood(self.eta, "eta", self.Y, False)
                 U = np.random.uniform(0, 1)
                 acceptance = min(np.exp(-new_like) / np.exp(-old_like), 1)
 

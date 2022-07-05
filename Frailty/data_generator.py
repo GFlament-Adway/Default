@@ -24,10 +24,10 @@ def get_data(n, T, **kwargs):
     betas = kwargs["kwargs"]["real values"]["betas"]
     p = len(betas)
     if kwargs["kwargs"]["const"] == 1:
-        X = [[[1] + [np.random.uniform(kwargs["kwargs"]["min_values_X"], kwargs["kwargs"]["max_values_X"]) for _ in range(p - 1)] for _ in range(n)] for _ in range(T)]
+        X = [[[1] + [np.random.uniform(kwargs["kwargs"]["min_values_X"][i], kwargs["kwargs"]["max_values_X"][i]) for i in range(p - 1)] for _ in range(n)] for _ in range(T)]
     else:
         print("No constant")
-        X = [[[np.random.uniform(kwargs["kwargs"]["min_values_X"], kwargs["kwargs"]["max_values_X"]) for _ in range(p)] for _ in range(n)] for _ in range(T)]
+        X = [[[np.random.uniform(kwargs["kwargs"]["min_values_X"][i], kwargs["kwargs"]["max_values_X"][i]) for _ in range(p)] for _ in range(n)] for _ in range(T)]
 
 
     #betas = [np.random.choice([-1, 1], p = [0.8, 0.2])*np.random.normal(0.9, 0.2) for _ in range(p+1)]

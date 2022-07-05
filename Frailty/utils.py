@@ -35,15 +35,14 @@ def load_params(path="settings/settings.json"):
 
 
 def output_latex(param, results, run, existing_runs):
-    result_tab = """ \\begin{tabular}{c|c|c|c|c}
-    Iteration & beta & eta & MSE Frailty & Frailty mean\\\\ 
+    result_tab = """ \\begin{tabular}{c|c|c|c}
+    Iteration & beta & eta & Frailty mean\\\\ 
     \\hline
     """
     for k in results.keys():
-        result_tab += "{k} & {beta} & {eta} & {mse} & {frailty_mean}\\\\ \hline".format(k=k, beta=results[k]["estimated betas"],
-                                                                        eta=results[k]["estimated eta"],
-                                                                        mse=results[k]["mse"],
-                                                                                        frailty_mean=results[k]["frailty mean"])
+        result_tab += "{k} & {beta} & {eta} & {frailty_mean}\\\\ \hline".format(k=k, beta=results[k]["estimated betas"],
+                                                                                eta=results[k]["estimated eta"],
+                                                                                frailty_mean=results[k]["frailty mean"])
 
     result_tab += """
     \\end{tabular}
@@ -67,7 +66,11 @@ def output_latex(param, results, run, existing_runs):
      \\hline
      Censure &""" + " $\\exp" + "({m})$ ".format(m=param["Censure"]) + """ \\\\
      \\hline
-     Seed &""" "${s}$ ".format(s=param["seed"]) + """ \\\\
+     Optimization method & """ + "({m}) ".format(m=param["optimization_method"].replace("_"," ")) + """ \\\\
+     \\hline
+     Seed &""" + "${s}$ ".format(s=param["seed"]) + """ \\\\
+     \\hline
+     Constante &""" + "${s}$ ".format(s=str(param["const"]).replace("1", "Yes").replace("0", "No")) + """ \\\\
      \\hline
 \end{tabular}""" + result_tab
     with open("run/run_{k}/result_summary.txt".format(k=run + existing_runs), "w") as txt_file:
@@ -76,9 +79,9 @@ def output_latex(param, results, run, existing_runs):
     if param["savefig"] == "True":
         plt.figure()
         plt.plot(results[run]["Y"], color="red", label="True value")
-        plt.plot(np.array(results[run]["frailty path"]).T, color="blue", alpha=0.1)
+        plt.plot(np.array(results[run]["frailty mean"]).T, color="blue", alpha=0.4)
         plt.legend()
-        plt.savefig("run/run_{k}/frailty_path_{l}".format(k=run+existing_runs, l=run+existing_runs))
+        plt.savefig("run/run_{k}/frailty_path_{l}".format(k=run + existing_runs, l=run + existing_runs))
 
         mat = np.matmul(results[run]["X"], results[run]["estimated betas"]).T
         mat += results[run]["estimated eta"] * np.mean(results[run]["frailty path"][0])
@@ -93,10 +96,9 @@ def output_latex(param, results, run, existing_runs):
             plt.plot(hat_intensities[a], label="hat")
             plt.plot(intensities[a], label="true")
             plt.legend()
-            plt.savefig("run/run_{k}/hazard_rate_indiv_{a}".format(k=run+existing_runs, a=a))
+            plt.savefig("run/run_{k}/hazard_rate_indiv_{a}".format(k=run + existing_runs, a=a))
 
     return full_string
-
 
 
 if __name__ == "__main__":
